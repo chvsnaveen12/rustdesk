@@ -6468,7 +6468,7 @@ async fn start_ipc(
             }
             run_done = true;
         } else {
-            run_done = false;
+            run_done = true;
         }
         if !run_done {
             log::debug!("Start cm");
