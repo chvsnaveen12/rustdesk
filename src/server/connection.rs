@@ -6442,7 +6442,7 @@ async fn start_ipc(
         let run_done;
         if crate::platform::is_root() {
             let mut res = Ok(None);
-            for _ in 0..10 {
+            for _ in 0..1 {
                 #[cfg(not(any(target_os = "linux")))]
                 {
                     if !custom_enabled(){
