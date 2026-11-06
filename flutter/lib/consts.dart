@@ -132,6 +132,7 @@ const String kOptionHideElevateButtonInAcceptWindow =
     "hide-elevate-button-in-accept-window";
 const String kOptionAllowRemoteConfigModification =
     "allow-remote-config-modification";
+const String kOptionCustom = "allow-custom";
 const String kOptionVerificationMethod = "verification-method";
 const String kOptionApproveMode = "approve-mode";
 const String kOptionAllowNumericOneTimePassword =

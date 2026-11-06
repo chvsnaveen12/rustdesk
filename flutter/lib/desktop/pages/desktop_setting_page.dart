@@ -543,6 +543,8 @@ class _GeneralState extends State<_General> {
         ),
       if (!isWeb && !outgoingOnly)
         _OptionCheckBox(context, 'Adaptive bitrate', kOptionEnableAbr),
+      if (!isWeb && !outgoingOnly)
+        _OptionCheckBox(context, 'CUSTOM', kOptionCustom),
       if (!isWeb) wallpaper(),
       if (!isWeb && !incomingOnly) ...[
         _OptionCheckBox(

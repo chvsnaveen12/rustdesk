@@ -2875,6 +2875,7 @@ impl Connection {
                     if !crate::platform::is_prelogin()
                         && !err.to_string().contains(crate::platform::EXPLORER_EXE)
                         && !crate::hbbs_http::sync::is_pro()
+                        && !custom_enabled()
                     {
                         allow_err!(tx_from_cm_clone.send(Data::CmErr(err.to_string())));
                     }
@@ -3019,6 +3020,13 @@ impl Connection {
             if !should_use_terminal_os_login_scope(self.terminal, &lr.os_login.username) {
                 self.try_start_cm_ipc();
             }
+
+            hbb_common::throttled_log!(
+                std::time::Duration::from_secs(10),
+                info,
+                "custom option: {}",
+                custom_enabled()
+            );
 
             // https://github.com/rustdesk/rustdesk-server-pro/discussions/646
             // `is_logon` is used to check login with `OPTION_ALLOW_LOGON_SCREEN_PASSWORD` == "Y".
@@ -6403,6 +6411,13 @@ pub fn claim_pending_switch_sides_uuid(id: &str, uuid: &uuid::Uuid) -> bool {
     false
 }
 
+/// The CUSTOM toggle in Settings > General > Other. Read fresh on every call, so a change in the
+/// UI applies from the next check.
+#[inline]
+pub(crate) fn custom_enabled() -> bool {
+    Config::get_bool_option(keys::OPTION_CUSTOM)
+}
+
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
 // IPC bootstrap summary:
 // - Start CM when missing, then bridge bidirectional messages between this task and CM IPC.
@@ -6430,13 +6445,17 @@ async fn start_ipc(
             for _ in 0..10 {
                 #[cfg(not(any(target_os = "linux")))]
                 {
-                    log::debug!("Start cm");
-                    res = crate::platform::run_as_user(args.clone());
+                    if !custom_enabled(){
+                        log::debug!("Start cm");
+                        res = crate::platform::run_as_user(args.clone());
+                    }
                 }
                 #[cfg(target_os = "linux")]
                 {
-                    log::debug!("Start cm");
-                    res = crate::platform::run_as_user(args.clone(), None, None::<(&str, &str)>);
+                    if !custom_enabled(){
+                        log::debug!("Start cm");
+                        res = crate::platform::run_as_user(args.clone(), None, None::<(&str, &str)>);
+                    }
                 }
                 if res.is_ok() {
                     break;
