@@ -6438,24 +6438,26 @@ async fn start_ipc(
         stream = Some(s);
     }
     if stream.is_none() {
+        // CUSTOM: run the session without a connection manager. Do not launch `--cm`, and skip
+        // the pipe-wait loop below that would otherwise spend ~6s waiting for a CM that will
+        // never exist. Returning Ok here keeps the connection alive (no CmErr is sent).
+        if custom_enabled() {
+            return Ok(());
+        }
         let args = vec!["--cm"];
         let run_done;
         if crate::platform::is_root() {
             let mut res = Ok(None);
-            for _ in 0..1 {
+            for _ in 0..10 {
                 #[cfg(not(any(target_os = "linux")))]
                 {
-                    if !custom_enabled(){
-                        log::debug!("Start cm");
-                        res = crate::platform::run_as_user(args.clone());
-                    }
+                    log::debug!("Start cm");
+                    res = crate::platform::run_as_user(args.clone());
                 }
                 #[cfg(target_os = "linux")]
                 {
-                    if !custom_enabled(){
-                        log::debug!("Start cm");
-                        res = crate::platform::run_as_user(args.clone(), None, None::<(&str, &str)>);
-                    }
+                    log::debug!("Start cm");
+                    res = crate::platform::run_as_user(args.clone(), None, None::<(&str, &str)>);
                 }
                 if res.is_ok() {
                     break;
@@ -6468,7 +6470,7 @@ async fn start_ipc(
             }
             run_done = true;
         } else {
-            run_done = true;
+            run_done = false;
         }
         if !run_done {
             log::debug!("Start cm");
